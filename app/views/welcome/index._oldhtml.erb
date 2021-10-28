@@ -1,0 +1,12 @@
+<h1>Welcome#index</h1>
+<p>Find me in app/views/welcome/index.html.erb</p>
+<%= javascript_pack_tag 'main', 'data-turbolinks-track': 'reload' %>
+
+<div class="container">
+    <div id="crud-table" data-label="<%= @config[:label] %>" data-default_sort_by= "<%= @config[:default_sort_by] %>" data-crud_path="<%= @config[:crud_path] %>">
+       <!-- Vue Crud Table Component app\javascript\packs\main.js rendered here -->
+    </div>
+</div>
+
+
+
