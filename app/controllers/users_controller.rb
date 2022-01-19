@@ -1,21 +1,8 @@
 class UsersController < ApplicationController
     def index
+        @crud_table = ::VueCrudTable::Base.new
         @users = User.all
-        # move to presenter or concern
-        # autogenerate headers taking model attributes
-        headers = [
-          {
-            text: "Vorname",
-            align: "left",
-            value: "first_name"
-          },
-          { text: "Nachname", value: "last_name" },
-          { text: "Email", value: "email" },
-          { text: "Telefon", value: "phone" },
-          #{ text: "Adresse", value: "address" },
-          { text: "Aktionen", value: "action", sortable: false }
-        ]
-        render json: { data: @users, headers: headers }
+        render json: { data: @users, headers: @crud_table.headers }
     end
 
     def show
