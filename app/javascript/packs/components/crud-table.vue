@@ -1,5 +1,8 @@
 <template lang="pug">
-  v-data-table.elevation-2(:headers='headers', :items='items', :sort-by='config.defaultSortBy')
+  v-data-table.elevation-2(:headers='headers', :items='items',
+    :sort-by='config.defaultSortBy'
+    :page='page'
+    :items-per-page="itemsPerPage")
     template(v-slot:top)
       v-toolbar(flat, color='white')
         v-divider.mx-4(inset='', vertical='')
@@ -13,7 +16,7 @@
             v-card-text
               v-container
                 v-row
-                  v-col(v-for='attribute in attributes', :key='attribute.value', cols='12', sm='6', md='4')
+                  v-col(v-for='attribute in attributes', :key='attribute.value', v-if="notIgnoredAttribute(attribute)" cols='12', sm='6', md='4')
                     // Needs logic to determine which kind of input is appropiate for attribute given
                     v-text-field(v-model='editedItem[attribute.value]', :label='attribute.text')
             v-card-actions
@@ -32,8 +35,8 @@
               v-btn(color='blue darken-1', text, @click='deleteItemConfirm') L&ouml;schen
               v-spacer
     template(v-slot:item.action='{ item }')
-      v-icon.mr-2(small, @click='editItem(item)') Bearbeiten
-      v-icon(small, @click='deleteItem(item)') L&ouml;schen
+      v-icon.mr-2(small, @click='editItem(item)') mdi-pencil
+      v-icon(small, @click='deleteItem(item)') mdi-delete
     template(v-slot:no-data)
       v-btn(color='primary', @click='initialize') Aktualisieren
 </template>
@@ -43,6 +46,8 @@ import axios from "axios";
   // Move axios to config, set default headers, etc. 
 export default {
   data: () => ({
+    page: 1,
+    itemsPerPage: 5,
     dialog: false,
     dialogDelete: false,
     validationErrors: false,
@@ -73,7 +78,7 @@ export default {
   methods: {
     initialize() {      
         return axios
-            .get(`/${this.config.crudPath}`)
+            .get(`/${this.config.crudPath}?per_page=${this.itemsPerPage}&page=${this.page}`)
             .then(response => {
                 this.items = response.data.data;
                 this.headers = response.data.headers;
@@ -156,6 +161,9 @@ export default {
           this.editedIndex = -1
         })
       },
+    notIgnoredAttribute (attribute) {
+      return !['id', 'created_at', 'updated_at'].includes(attribute.value);
+    },
     setValidationErrors () {
       
     },

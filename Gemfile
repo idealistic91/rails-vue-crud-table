@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.0'
+ruby '2.7.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 6.0.3', '>= 6.0.3.3'
@@ -17,6 +17,7 @@ gem 'webpacker', '~> 5.4.2'
 gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.7'
+gem 'will_paginate', '~> 3.3', '>= 3.3.1'
 gem 'haml', '~> 5.1', '>= 5.1.2'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'

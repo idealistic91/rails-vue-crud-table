@@ -1,8 +1,8 @@
 class UsersController < ApplicationController
     def index
         @crud_table = ::VueCrudTable::Base.new
-        @users = User.all
-        render json: { data: @users, headers: @crud_table.headers }
+        @users = User.all.paginate(page: params[:page], per_page: params[:per_page])
+        render json: { data: @users, headers: @crud_table.headers, pages: @users.total_pages }
     end
 
     def show
