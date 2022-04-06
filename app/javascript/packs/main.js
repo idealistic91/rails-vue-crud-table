@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     vuetify: new Vuetify(),
     render: h => h(App)
-  }).$mount(app.$el)
+  })
+
+  //app.$mount('#crud-table')
 })
 
 

@@ -1,8 +1,13 @@
 <template lang="pug">
   v-data-table.elevation-2(:headers='headers', :items='items',
-    :sort-by='config.defaultSortBy'
     :page='page'
-    :items-per-page="itemsPerPage")
+    :pageCount='totalPages'
+    :sort-by='config.defaultSortBy'
+    :options.sync="options"
+    :server-items-length="totalItems"
+    :loading="loading"
+    @update:page="pageUpdated"
+    )
     template(v-slot:top)
       v-toolbar(flat, color='white')
         v-divider.mx-4(inset='', vertical='')
@@ -18,6 +23,7 @@
                 v-row
                   v-col(v-for='attribute in attributes', :key='attribute.value', v-if="notIgnoredAttribute(attribute)" cols='12', sm='6', md='4')
                     // Needs logic to determine which kind of input is appropiate for attribute given
+                    
                     v-text-field(v-model='editedItem[attribute.value]', :label='attribute.text')
             v-card-actions
               v-spacer
@@ -38,7 +44,7 @@
       v-icon.mr-2(small, @click='editItem(item)') mdi-pencil
       v-icon(small, @click='deleteItem(item)') mdi-delete
     template(v-slot:no-data)
-      v-btn(color='primary', @click='initialize') Aktualisieren
+      v-btn(color='primary', @click='fetchData') Aktualisieren
 </template>
 
 <script>
@@ -46,8 +52,11 @@ import axios from "axios";
   // Move axios to config, set default headers, etc. 
 export default {
   data: () => ({
+    loading: false,
+    options: {},
     page: 1,
-    itemsPerPage: 5,
+    totalItems: 0,
+    totalPages: 0,
     dialog: false,
     dialogDelete: false,
     validationErrors: false,
@@ -65,6 +74,12 @@ export default {
     }
   },
   watch: {
+    options: {
+      handler() {
+        this.fetchData()
+      },
+      deep: true
+    },
     dialog(val) {
       val || this.close();
     },
@@ -73,15 +88,22 @@ export default {
       },
   },
   created() {
-    this.initialize();
+    this.fetchData();
   },
   methods: {
-    initialize() {      
+    fetchData() {
+        this.loading = true;
+        const { page, itemsPerPage } = this.options;
+        //let pageNumber = page - 1;
         return axios
-            .get(`/${this.config.crudPath}?per_page=${this.itemsPerPage}&page=${this.page}`)
+            .get(`/${this.config.crudPath}?per_page=${itemsPerPage}&page=${page}`)
             .then(response => {
+                this.loading = false;
                 this.items = response.data.data;
                 this.headers = response.data.headers;
+                this.totalPages = response.data.pages;
+                this.totalItems = response.data.count
+
                 this.attributes = this.headers.filter((header)=> { return(header.value !== 'action') })
                 this.attributes.forEach((attribute)=> {
                   this.editedItem[attribute.value] = ""
@@ -103,7 +125,7 @@ export default {
             axios
             .put(`/${this.config.crudPath}/${item.id}`, this.editedItem)
             .then(response => {
-              this.initialize();
+              this.fetchData();
               this.close();
             })
             .catch(error => {
@@ -117,7 +139,7 @@ export default {
                 .then(response => {
                     let success = response.data.message === 'Success'
                     if(success) {
-                      this.initialize();
+                      this.fetchData();
                       this.close();
                     } else {
                       console.log('Something went wrong')
@@ -127,6 +149,9 @@ export default {
                     console.log(error);
                 });
         }
+    },
+    pageUpdated(item) {
+      console.log(item)
     },
     deleteItem(item) {
         const index = this.items.indexOf(item);
@@ -139,7 +164,6 @@ export default {
         axios
             .delete(`/${this.config.crudPath}/${this.editedItem.id}`)
             .then(response => {
-                //this.initialize();
                 this.items.splice(this.editedIndex, 1)
                 this.closeDelete()
             })
